@@ -1,0 +1,72 @@
+import React, { useEffect, useRef, useState } from "react"
+import Webcam from "react-webcam"
+import axios from "axios"
+
+const Login = () => {
+  const [email, setemail] = useState("")
+  const [img, setimg] = useState("")
+  const [single, setsingle] = useState("true")
+  const [currentTime, setCurrentTime] = useState(new Date())
+
+  useEffect(() => {
+    const timerID = setInterval(() => tick(), 1000)
+
+    return function cleanup() {
+      clearInterval(timerID)
+    }
+  }, [])
+
+  function tick() {
+    setCurrentTime(new Date())
+  }
+
+  const emailHandler = (e) => {
+    setemail(e.target.value)
+  }
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!email) {
+        alert("Email Required")
+        return
+      }
+
+      const result = await axios.post("http://localhost:5000/data", {
+        image: img,
+        email: email,
+        currentTime: currentTime,
+      })
+    }
+
+    fetchData()
+  }, [img])
+
+  return (
+    <div>
+      <h1>Login Page</h1>
+      {email && (
+        <Webcam
+          audio={false}
+          height={720}
+          screenshotFormat="image/jpeg"
+          width={1280}
+        >
+          {({ getScreenshot }) => (
+            <button
+              onClick={() => {
+                const screenShot = getScreenshot()
+                setsingle((pre) => !pre)
+                setimg(screenShot)
+              }}
+            >
+              {single ? "clockIn" : "clockout"}
+            </button>
+          )}
+        </Webcam>
+      )}
+      <input type="email" onChange={emailHandler} value={email}></input>
+    </div>
+  )
+}
+
+export default Login
